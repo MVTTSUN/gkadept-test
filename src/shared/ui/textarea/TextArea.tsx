@@ -34,6 +34,7 @@ export function TextArea(props: TextAreaProps) {
 
   return (
     <TextAreaStyled
+      maxLength={35}
       ref={textAreaRef}
       rows={1}
       {...restProps}

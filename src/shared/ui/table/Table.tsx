@@ -3,7 +3,7 @@ import { RowHeaderTable } from "../row-header-table";
 import { RowDataTable } from "../row-data-table";
 import { ColumnsTable } from "../../types";
 import { ResetTable } from "../../lib/mixins";
-import { useCallback, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { CheckBox } from "../checkbox";
 import { Button } from "../button";
 import { useFetchingScroll, useVirtualizeList } from "../../lib/hooks";
@@ -37,10 +37,11 @@ export function Table<T extends { id: string; isChecked: boolean }>(
     fetchingCallback,
     ...restProps
   } = props;
+  const [bodyHeight, setBodyHeight] = useState(0);
+  const tableRef = useRef<HTMLTableElement | null>(null);
   const scrollElementRef = useRef<HTMLTableSectionElement | null>(null);
   const { virtualItems } = useVirtualizeList({
     itemHeight: 100,
-    listHeight: 900,
     itemsCount: rows.length,
     getScrollElement: useCallback(() => scrollElementRef.current, []),
   });
@@ -49,8 +50,17 @@ export function Table<T extends { id: string; isChecked: boolean }>(
     getScrollElement: useCallback(() => scrollElementRef.current, []),
   });
 
+  useLayoutEffect(() => {
+    if (tableRef.current && scrollElementRef.current) {
+      setBodyHeight(
+        tableRef.current.getClientRects()[0].height -
+          scrollElementRef.current.getClientRects()[0].height
+      );
+    }
+  }, []);
+
   return (
-    <Container cellSpacing={0} cellPadding={0}>
+    <Container ref={tableRef} cellSpacing={0} cellPadding={0}>
       <Caption>
         {name}
         <ToolBox>
@@ -85,7 +95,7 @@ export function Table<T extends { id: string; isChecked: boolean }>(
       <Header>
         <RowHeaderTable columns={columns} isShowCheckbox={isShowCheckbox} />
       </Header>
-      <Body ref={scrollElementRef}>
+      <Body ref={scrollElementRef} $height={bodyHeight}>
         <tr>
           <td>
             <BodyTable
@@ -147,10 +157,10 @@ const BodyTable = styled.table<{ $height: number }>`
   height: ${({ $height }) => $height}px;
 `;
 
-const Body = styled.tbody`
+const Body = styled.tbody<{ $height?: number }>`
   position: relative;
   display: block;
-  height: 900px;
+  height: calc(100vh - ${({ $height }) => $height}px);
   overflow: auto;
   z-index: 0;
 `;
