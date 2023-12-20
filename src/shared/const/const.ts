@@ -12,6 +12,8 @@ enum Color {
   White = "#ffffff",
 }
 
+const ROW_DATA_TABLE_HEIGHT = 100;
+
 const CNT_COMPANIES = 10000;
 const CNT_ITEMS_CHUNK = 50;
 
@@ -37,6 +39,7 @@ const COLUMNS_EMPLOYEE_TABLE = [
 export {
   SliceName,
   Color,
+  ROW_DATA_TABLE_HEIGHT,
   CNT_COMPANIES,
   CNT_ITEMS_CHUNK,
   CNT_EMPLOYEES_MIN,

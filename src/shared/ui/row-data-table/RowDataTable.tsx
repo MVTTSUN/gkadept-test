@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { ColumnsTable } from "../../types";
 import { ResetTableData } from "../../lib/mixins";
-import { Color } from "../../const";
+import { Color, ROW_DATA_TABLE_HEIGHT } from "../../const";
 import { TextArea } from "../textarea";
 import { CheckBox } from "../checkbox";
 
@@ -19,8 +19,16 @@ type RowDataTableProps<T> = {
 export function RowDataTable<T extends { id: string }>(
   props: RowDataTableProps<T>
 ) {
-  const { columns, row, isChecked, isShowCheckbox, onCheck, offsetTop, index, inputCallback } =
-    props;
+  const {
+    columns,
+    row,
+    isChecked,
+    isShowCheckbox,
+    onCheck,
+    offsetTop,
+    index,
+    inputCallback,
+  } = props;
 
   return (
     <TableRow $offsetTop={offsetTop} $index={index} $isChecked={isChecked}>
@@ -35,7 +43,9 @@ export function RowDataTable<T extends { id: string }>(
             <TableData key={index}>
               <TextArea
                 value={String(row[field as keyof typeof row])}
-                debounceCallback={(debouncedValueState) => inputCallback(row.id, field, debouncedValueState)}
+                debounceCallback={(debouncedValueState) =>
+                  inputCallback(row.id, field, debouncedValueState)
+                }
               />
             </TableData>
           );
@@ -59,7 +69,7 @@ const TableRow = styled.tr<{
   display: table;
   width: 100%;
   table-layout: fixed;
-  height: 100px;
+  height: ${ROW_DATA_TABLE_HEIGHT}px;
   position: absolute;
   top: 0;
   transform: translateY(${({ $offsetTop }) => $offsetTop}px);

@@ -3,10 +3,15 @@ import { RowHeaderTable } from "../row-header-table";
 import { RowDataTable } from "../row-data-table";
 import { ColumnsTable } from "../../types";
 import { ResetTable } from "../../lib/mixins";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { CheckBox } from "../checkbox";
 import { Button } from "../button";
-import { useFetchingScroll, useVirtualizeList } from "../../lib/hooks";
+import {
+  useFetchingScroll,
+  useObserver,
+  useVirtualizeList,
+} from "../../lib/hooks";
+import { ROW_DATA_TABLE_HEIGHT } from "../../const";
 
 type TableProps<T> = {
   name: string;
@@ -37,27 +42,23 @@ export function Table<T extends { id: string; isChecked: boolean }>(
     fetchingCallback,
     ...restProps
   } = props;
-  const [bodyHeight, setBodyHeight] = useState(0);
   const tableRef = useRef<HTMLTableElement | null>(null);
   const scrollElementRef = useRef<HTMLTableSectionElement | null>(null);
   const { virtualItems } = useVirtualizeList({
-    itemHeight: 100,
+    itemHeight: ROW_DATA_TABLE_HEIGHT,
     itemsCount: rows.length,
     getScrollElement: useCallback(() => scrollElementRef.current, []),
+  });
+  const [tableSize, scrollSize] = useObserver({
+    elements: useCallback(
+      () => [tableRef.current, scrollElementRef.current],
+      []
+    ),
   });
   useFetchingScroll({
     fetchingCallback,
     getScrollElement: useCallback(() => scrollElementRef.current, []),
   });
-
-  useLayoutEffect(() => {
-    if (tableRef.current && scrollElementRef.current) {
-      setBodyHeight(
-        tableRef.current.getClientRects()[0].height -
-          scrollElementRef.current.getClientRects()[0].height
-      );
-    }
-  }, []);
 
   return (
     <Container ref={tableRef} cellSpacing={0} cellPadding={0}>
@@ -95,13 +96,18 @@ export function Table<T extends { id: string; isChecked: boolean }>(
       <Header>
         <RowHeaderTable columns={columns} isShowCheckbox={isShowCheckbox} />
       </Header>
-      <Body ref={scrollElementRef} $height={bodyHeight}>
+      <Body
+        ref={scrollElementRef}
+        $height={
+          tableSize && scrollSize && tableSize.height - scrollSize.height
+        }
+      >
         <tr>
           <td>
             <BodyTable
               cellSpacing={0}
               cellPadding={0}
-              $height={rows.length * 100}
+              $height={rows.length * ROW_DATA_TABLE_HEIGHT}
             >
               <tbody>
                 {virtualItems.map((virtualItem) => {
