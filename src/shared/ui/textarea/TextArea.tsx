@@ -1,5 +1,11 @@
 import styled from "styled-components";
-import { TextareaHTMLAttributes, useEffect, useRef, useState } from "react";
+import {
+  TextareaHTMLAttributes,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDebounce } from "../../lib/hooks";
 
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -16,13 +22,16 @@ export function TextArea(props: TextAreaProps) {
     delay: 1000,
   });
 
-  useEffect(() => {
+  const changeHeight = () => {
     if (textAreaRef.current) {
       textAreaRef.current.style.height = "auto";
       textAreaRef.current.style.height =
         textAreaRef.current.scrollHeight - 16 + "px";
     }
+  };
 
+  useEffect(() => {
+    changeHeight();
     isSameStateAndDebounce.current = debouncedValueState === valueState;
   }, [valueState]);
 
@@ -31,6 +40,10 @@ export function TextArea(props: TextAreaProps) {
       debounceCallback(debouncedValueState);
     }
   }, [debouncedValueState]);
+
+  useLayoutEffect(() => {
+    changeHeight();
+  }, []);
 
   return (
     <TextAreaStyled
